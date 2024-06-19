@@ -1,0 +1,74 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: game-2048
+  namespace: ngrok-ingress-controller
+spec:
+  ports:
+    - name: http
+      port: 80
+      targetPort: 80
+  selector:
+    app: game-2048
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: game-2048
+  namespace: ngrok-ingress-controller
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: game-2048
+  template:
+    metadata:
+      labels:
+        app: game-2048
+    spec:
+      containers:
+        - name: backend
+          image: alexwhen/docker-2048
+          ports:
+            - name: http
+              containerPort: 80
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: GatewayClass
+metadata:
+  name: ngrok-gatewayclass
+  namespace: ngrok-ingress-controller
+spec:
+  controllerName: ngrok.com/gateway-controller
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: ngrok-gateway
+  namespace: ngrok-ingress-controller
+spec:
+  gatewayClassName: ngrok-gatewayclass
+  listeners:
+    - protocol: HTTPS
+      hostname: scott-gtw-aws-5.ngrok.io
+      port: 443
+      tls: 
+        mode: Terminate
+        certificateRefs:
+        - name: ngrokcert
+      name: test-mc-test
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: example-route
+  namespace: ngrok-ingress-controller
+spec:
+  parentRefs:
+  - name: ngrok-gateway
+  hostnames: [ scott-gtw-aws-5.ngrok.io ]
+  rules:
+  - backendRefs:
+    - name: game-2048
+      port: 80
+      kind: Service

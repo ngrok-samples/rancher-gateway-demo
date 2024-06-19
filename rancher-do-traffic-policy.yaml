@@ -1,0 +1,30 @@
+# Traffic Policy Actions
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: header-mod-route
+  namespace: ngrok-ingress-controller
+spec:
+  parentRefs:
+    - kind: Gateway
+      name: ngrok-gateway
+      namespace: ngrok-ingress-controller
+  hostnames:
+    - "scott-gtw-do-3.ngrok.io"
+  rules:
+  - backendRefs:
+    - name: game-2048
+      port: 80
+      kind: Service
+    filters:
+      - type: RequestHeaderModifier
+        requestHeaderModifier:
+          add:
+            - name: "is-gateway"
+              value: "true"
+            - name: "sag-hallo"
+              value: "Hallo SUSECON!"
+            - name: country
+              value: "${.ngrok.geo.country_code}"
+          remove:
+            - "referer"
