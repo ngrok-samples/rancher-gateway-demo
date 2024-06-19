@@ -10,7 +10,7 @@ spec:
       name: ngrok-gateway
       namespace: ngrok-ingress-controller
   hostnames:
-    - "scott-gtw-aws-4.ngrok.io"
+    - "scott-gtw-aws-susecon.ngrok.io"
   rules:
   - backendRefs:
     - name: game-2048
